@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>競馬予想補助</title>
+
+<!-- PWA設定 -->
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#1a1410">
+
+<!-- iPhone Safari でホーム画面に追加した時の見た目設定 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="予想補助">
+<link rel="apple-touch-icon" href="./icon-192.png">
+
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <header class="app-header">
+    <p class="app-header__title">地方競馬 予想補助</p>
+    <p class="app-header__sub">固定ルールでスコアリング・買い目を組むだけ</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="input">入力</button>
+    <button class="tab-btn" data-tab="result">判定</button>
+    <button class="tab-btn" data-tab="history">履歴</button>
+  </div>
+
+  <!-- ===================== 入力タブ ===================== -->
+  <section class="tab-panel active" id="tab-input">
+
+    <div class="card">
+      <p class="card-title">レース条件</p>
+
+      <div class="field">
+        <label for="raceName">レース名</label>
+        <input type="text" id="raceName" placeholder="例：第3R 大井 ダ1200">
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="distance">距離（m）</label>
+          <input type="number" id="distance" value="1400" step="100">
+        </div>
+        <div class="field">
+          <label for="raceClass">クラス</label>
+          <input type="text" id="raceClass" placeholder="例：C2">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>馬場状態</label>
+        <div class="segmented" id="trackConditionSeg">
+          <button data-val="良" class="selected">良</button>
+          <button data-val="稍重">稍重</button>
+          <button data-val="重">重</button>
+          <button data-val="不良">不良</button>
+        </div>
+      </div>
+
+      <div class="checkbox-row">
+        <input type="checkbox" id="isHoliday">
+        <label for="isHoliday">休日（予算上限を3000円にする）</label>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title">出走馬データ</p>
+      <div id="horseList"></div>
+      <button class="btn btn-ghost" id="addHorseBtn">＋ 馬を追加</button>
+    </div>
+
+    <button class="btn btn-primary" id="evaluateBtn">このレースを評価する</button>
+  </section>
+
+  <!-- ===================== 判定タブ ===================== -->
+  <section class="tab-panel" id="tab-result">
+    <div id="resultEmpty" class="empty-state">
+      まだ評価していません。<br>「入力」タブでデータを入れて評価してください。
+    </div>
+    <div id="resultContent" class="hidden"></div>
+  </section>
+
+  <!-- ===================== 履歴タブ ===================== -->
+  <section class="tab-panel" id="tab-history">
+    <div class="card">
+      <p class="card-title">本日のご予算</p>
+      <div id="guardSummary"></div>
+    </div>
+
+    <div class="card">
+      <p class="card-title">本日の履歴</p>
+      <div id="historyList"></div>
+      <button class="btn btn-secondary" id="resetHistoryBtn" style="margin-top:10px;">本日の履歴をリセット</button>
+    </div>
+  </section>
+
+</div>
+
+<nav class="bottom-nav">
+  <button data-tab="input" class="active">
+    <span class="icon">✎</span>入力
+  </button>
+  <button data-tab="result">
+    <span class="icon">◎</span>判定
+  </button>
+  <button data-tab="history">
+    <span class="icon">≡</span>履歴
+  </button>
+</nav>
+
+<!-- 馬カードのテンプレート（JSから複製して使う） -->
+<template id="horseCardTemplate">
+  <div class="horse-card">
+    <div class="horse-card__head">
+      <div style="display:flex; align-items:center; flex:1;">
+        <span class="horse-card__number"></span>
+        <span class="horse-card__name">馬名未入力</span>
+      </div>
+      <span class="horse-card__chevron">▾</span>
+    </div>
+    <div class="horse-card__body">
+
+      <div class="field-row">
+        <div class="field">
+          <label>馬番</label>
+          <input type="number" class="h-number" min="1" max="18">
+        </div>
+        <div class="field">
+          <label>馬名</label>
+          <input type="text" class="h-name" placeholder="馬名">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>人気</label>
+          <input type="number" class="h-popularity" min="1" max="18" value="1">
+        </div>
+        <div class="field">
+          <label>単勝オッズ</label>
+          <input type="number" class="h-odds" min="1" step="0.1" value="5.0">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>脚質</label>
+        <div class="segmented h-running-style">
+          <button data-val="逃げ">逃げ</button>
+          <button data-val="先行" class="selected">先行</button>
+          <button data-val="差し">差し</button>
+          <button data-val="追込">追込</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>直近5走の着順（新→旧、カンマ区切り）</label>
+        <input type="text" class="h-last5" placeholder="例：3,4,2,5,1">
+      </div>
+
+      <div class="field">
+        <label>距離適性</label>
+        <div class="segmented h-distance-fit">
+          <button data-val="◎">◎</button>
+          <button data-val="○" class="selected">○</button>
+          <button data-val="△">△</button>
+          <button data-val="×">×</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>馬場適性</label>
+        <div class="segmented h-track-fit">
+          <button data-val="◎">◎</button>
+          <button data-val="○" class="selected">○</button>
+          <button data-val="△">△</button>
+          <button data-val="×">×</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>コース適性</label>
+        <div class="segmented h-course-fit">
+          <button data-val="◎">◎</button>
+          <button data-val="○" class="selected">○</button>
+          <button data-val="△">△</button>
+          <button data-val="×">×</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>クラス適性</label>
+        <div class="segmented h-class-fit">
+          <button data-val="◎">◎</button>
+          <button data-val="○" class="selected">○</button>
+          <button data-val="△">△</button>
+          <button data-val="×">×</button>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>騎手評価（1〜5）</label>
+          <input type="number" class="h-jockey" min="1" max="5" value="3">
+        </div>
+        <div class="field">
+          <label>厩舎評価（1〜5）</label>
+          <input type="number" class="h-stable" min="1" max="5" value="3">
+        </div>
+      </div>
+
+      <div class="checkbox-row">
+        <input type="checkbox" class="h-trouble">
+        <label>近走で大きく崩れた／不利あり</label>
+      </div>
+
+      <button class="remove-horse-btn">この馬を削除</button>
+    </div>
+  </div>
+</template>
+
+<script src="./logic.js"></script>
+<script src="./storage.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
