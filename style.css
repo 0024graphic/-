@@ -1,0 +1,583 @@
+/* ===================================================================
+   style.css
+   テーマ：ナイター地方競馬のゲート前。土の質感 × 電光掲示板。
+   配色:
+     --bg-soil   #1a1410  土・夜のメインバック
+     --panel     #241c16  パネル背景（やや明るい土）
+     --cream     #f0ead6  ゲートの砂・本文テキスト
+     --rust      #c4632e  勝負服のオレンジ、操作系アクセント
+     --turf      #3d5a4f  ターフグリーン、控えめな差し色
+     --gold      #d4af37  最上位ランク・警告枠
+=================================================================== */
+
+:root {
+  --bg-soil: #1a1410;
+  --panel: #241c16;
+  --panel-edge: #382c22;
+  --cream: #f0ead6;
+  --cream-dim: #b9b09c;
+  --rust: #c4632e;
+  --rust-bright: #e07b3e;
+  --turf: #3d5a4f;
+  --turf-bright: #5b8a78;
+  --gold: #d4af37;
+  --danger: #b3432b;
+  --safe-line: #2f4a40;
+
+  --radius: 14px;
+  --gap: 16px;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-soil);
+  color: var(--cream);
+  font-family: -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  min-height: 100vh;
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(196, 98, 46, 0.08), transparent 60%);
+}
+
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 16px 100px;
+}
+
+/* ---------------- ヘッダー：電光掲示板風 ---------------- */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--bg-soil);
+  padding: 18px 16px 12px;
+  margin: 0 -16px;
+  border-bottom: 1px solid var(--panel-edge);
+}
+
+.app-header__title {
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  color: var(--rust-bright);
+  font-weight: 700;
+  margin: 0 0 2px;
+  text-transform: uppercase;
+}
+
+.app-header__sub {
+  font-size: 11px;
+  color: var(--cream-dim);
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+
+/* ---------------- タブ切り替え ---------------- */
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 11px 0;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: 10px;
+  color: var(--cream-dim);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.tab-btn.active {
+  background: var(--rust);
+  border-color: var(--rust);
+  color: #1a1410;
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ---------------- カード共通 ---------------- */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: var(--gap);
+}
+
+.card-title {
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  color: var(--rust-bright);
+  text-transform: uppercase;
+  margin: 0 0 12px;
+  font-weight: 700;
+}
+
+/* ---------------- フォーム要素 ---------------- */
+.field {
+  margin-bottom: 14px;
+}
+
+.field label {
+  display: block;
+  font-size: 12px;
+  color: var(--cream-dim);
+  margin-bottom: 6px;
+  letter-spacing: 0.03em;
+}
+
+.field input[type="text"],
+.field input[type="number"],
+.field select {
+  width: 100%;
+  background: var(--bg-soil);
+  border: 1px solid var(--panel-edge);
+  border-radius: 8px;
+  padding: 11px 12px;
+  color: var(--cream);
+  font-size: 16px;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--rust);
+}
+
+.field-row {
+  display: flex;
+  gap: 8px;
+}
+.field-row .field {
+  flex: 1;
+}
+
+.segmented {
+  display: flex;
+  gap: 6px;
+}
+
+.segmented button {
+  flex: 1;
+  padding: 9px 0;
+  background: var(--bg-soil);
+  border: 1px solid var(--panel-edge);
+  border-radius: 8px;
+  color: var(--cream-dim);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.segmented button.selected {
+  background: var(--turf);
+  border-color: var(--turf-bright);
+  color: var(--cream);
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+}
+
+.checkbox-row input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--rust);
+}
+
+.checkbox-row label {
+  font-size: 13px;
+  color: var(--cream);
+  margin: 0;
+}
+
+/* ---------------- 馬カード（出走馬入力） ---------------- */
+.horse-card {
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.horse-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--panel);
+  cursor: pointer;
+}
+
+.horse-card__number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--rust);
+  color: #1a1410;
+  font-weight: 700;
+  border-radius: 6px;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.horse-card__name {
+  font-size: 14px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.horse-card__chevron {
+  color: var(--cream-dim);
+  transition: transform 0.2s;
+}
+
+.horse-card.open .horse-card__chevron {
+  transform: rotate(180deg);
+}
+
+.horse-card__body {
+  display: none;
+  padding: 14px;
+  background: var(--bg-soil);
+}
+
+.horse-card.open .horse-card__body {
+  display: block;
+}
+
+.remove-horse-btn {
+  background: none;
+  border: none;
+  color: var(--danger);
+  font-size: 12px;
+  padding: 6px 10px;
+}
+
+/* ---------------- ボタン ---------------- */
+.btn {
+  display: block;
+  width: 100%;
+  padding: 15px 0;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  border: none;
+  text-align: center;
+}
+
+.btn-primary {
+  background: var(--rust);
+  color: #1a1410;
+}
+
+.btn-secondary {
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  color: var(--cream);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px dashed var(--panel-edge);
+  color: var(--cream-dim);
+}
+
+.btn-sm {
+  width: auto;
+  padding: 8px 14px;
+  font-size: 12px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+.btn-row .btn { flex: 1; }
+
+/* ---------------- ゲート番号板（判定パネル）：シグネチャー要素 ---------------- */
+.gate-panel {
+  position: relative;
+  background: linear-gradient(180deg, #14100c, #1f1611);
+  border: 2px solid var(--panel-edge);
+  border-radius: var(--radius);
+  padding: 28px 16px 22px;
+  text-align: center;
+  margin-bottom: var(--gap);
+  overflow: hidden;
+}
+
+.gate-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255,255,255,0.015) 0px,
+    rgba(255,255,255,0.015) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+}
+
+.gate-panel__label {
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--cream-dim);
+  text-transform: uppercase;
+  margin: 0 0 10px;
+}
+
+.gate-panel__rank {
+  font-size: 64px;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 24px currentColor;
+}
+
+.gate-panel__rank.rank-A { color: var(--gold); }
+.gate-panel__rank.rank-Bplus { color: var(--rust-bright); }
+.gate-panel__rank.rank-B { color: var(--turf-bright); }
+.gate-panel__rank.rank-C { color: var(--cream-dim); }
+.gate-panel__rank.rank-through { color: var(--danger); font-size: 40px; }
+
+.gate-panel__note {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--cream-dim);
+}
+
+.chaos-badge {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 4px 12px;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid var(--gold);
+  border-radius: 20px;
+  font-size: 11px;
+  color: var(--gold);
+}
+
+/* ---------------- 馬評価テーブル ---------------- */
+.score-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.score-table th {
+  text-align: left;
+  font-size: 10px;
+  color: var(--cream-dim);
+  letter-spacing: 0.05em;
+  padding: 6px 6px;
+  border-bottom: 1px solid var(--panel-edge);
+}
+
+.score-table td {
+  padding: 9px 6px;
+  border-bottom: 1px solid var(--panel-edge);
+}
+
+.score-table tr:last-child td {
+  border-bottom: none;
+}
+
+.score-num {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.tag-pill {
+  display: inline-block;
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  margin-right: 4px;
+  margin-top: 2px;
+}
+
+.tag-danger { background: rgba(179, 67, 43, 0.18); color: #e98669; }
+.tag-mid { background: rgba(212, 175, 55, 0.15); color: var(--gold); }
+.tag-long { background: rgba(91, 138, 120, 0.18); color: var(--turf-bright); }
+
+/* ---------------- 買い目チケット ---------------- */
+.ticket-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--panel-edge);
+}
+.ticket-row:last-child { border-bottom: none; }
+
+.ticket-combo {
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+}
+
+.ticket-amount {
+  font-size: 14px;
+  color: var(--rust-bright);
+  font-weight: 600;
+}
+
+.budget-bar {
+  height: 8px;
+  background: var(--bg-soil);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 10px 0 6px;
+}
+
+.budget-bar__fill {
+  height: 100%;
+  background: var(--turf-bright);
+  transition: width 0.3s;
+}
+
+.budget-bar__fill.over {
+  background: var(--danger);
+}
+
+.budget-text {
+  font-size: 12px;
+  color: var(--cream-dim);
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ---------------- 警告バナー ---------------- */
+.warn-banner {
+  background: rgba(179, 67, 43, 0.14);
+  border: 1px solid var(--danger);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: var(--gap);
+}
+
+.warn-banner__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e98669;
+  margin: 0 0 6px;
+}
+
+.warn-banner__item {
+  font-size: 12px;
+  color: var(--cream);
+  margin: 4px 0;
+  line-height: 1.5;
+}
+
+.warn-banner.stop {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: var(--gold);
+}
+.warn-banner.stop .warn-banner__title {
+  color: var(--gold);
+}
+
+/* ---------------- 履歴リスト ---------------- */
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--panel-edge);
+  font-size: 13px;
+}
+.history-item:last-child { border-bottom: none; }
+
+.history-item__rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 24px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-right: 8px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--cream-dim);
+  font-size: 13px;
+}
+
+/* ---------------- フッターナビ ---------------- */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--panel);
+  border-top: 1px solid var(--panel-edge);
+  display: flex;
+  padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+  z-index: 60;
+}
+
+.bottom-nav button {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--cream-dim);
+  font-size: 11px;
+  padding: 6px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.bottom-nav button.active {
+  color: var(--rust-bright);
+}
+
+.bottom-nav .icon {
+  font-size: 18px;
+}
+
+/* ---------------- ユーティリティ ---------------- */
+.text-dim { color: var(--cream-dim); }
+.text-center { text-align: center; }
+.mt-0 { margin-top: 0; }
+.mb-0 { margin-bottom: 0; }
+.hidden { display: none !important; }
+
+@media (min-width: 481px) {
+  .app { padding-left: 24px; padding-right: 24px; }
+}
